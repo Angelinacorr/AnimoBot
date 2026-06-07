@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AnimoBot</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Iosevka+Charon:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kodchasan:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+
+  <header class="hdr">
+    <div class="hdr-top">
+      <div class="logo-box">
+        <img src="Logo.webp" alt="Logo">
+      </div>
+      <div class="brand">ANIMO<span>BOT</span></div>
+    </div>
+    <div class="linea"></div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="goTo('sobre')">Sobre Nosotros</button>
+      <button class="nav-btn" onclick="goTo('asistente')">Asistente IA</button>
+      <button class="nav-btn active" onclick="goTo('educacion')">Educación</button>
+      <button class="nav-btn" onclick="goTo('actividades')">Actividades</button>
+      <button class="nav-btn" onclick="goTo('comunidad')">Comunidad</button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- EDUCACIÓN -->
+    <section id="sec-educacion" class="section active">
+      <div class="hero">
+        <div>
+          <div class="hero-title">EDUCACIÓN<br>SOBRE<br>SALUD<br>MENTAL</div>
+        </div>
+        <div>
+          <p class="hero-desc">Aquí podrás encontrar un espacio dedicado a aprender y comprender mejor la salud mental, con información clara sobre la depresión, la ansiedad, el estrés y otros trastornos emocionales. También encontrarás consejos, recomendaciones y herramientas que te ayudarán a identificar lo que sientes y a cuidar mejor de tu bienestar emocional.</p>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="three-col">
+
+          <!-- COL 1: Comunidad + Bot -->
+          <div>
+            <div class="col-title">Comunidad <span class="arr">›</span></div>
+            <div class="com-cards">
+              <div class="com-card" onclick="goTo('comunidad')">
+                <div class="ic">💙</div>
+                <div class="lbl">Consejos entre usuarios</div>
+              </div>
+              <div class="com-card" onclick="goTo('comunidad')">
+                <div class="ic">🏆</div>
+                <div class="lbl">Historias de superación</div>
+              </div>
+            </div>
+            <div class="bot-mini">
+              <span class="bot-mini-avatar">🤖</span>
+              <div class="bot-mini-name">¡Hola! Soy<br><span>AnimoBOT</span><br>Mucho Gusto</div>
+              <div class="bot-mini-sub">Si necesitas hablar o desahogarte, AnimoBot está aquí para escucharte y acompañarte. No estás solo.</div>
+              <button class="btn-quiero" onclick="goTo('asistente')">Quiero hablar</button>
+            </div>
+          </div>
+
+          <!-- COL 2: Educación -->
+          <div>
+            <div class="col-edu-title"><b>EDUCACIÓN</b></div>
+            <div class="edu-items">
+              <div class="edu-item">¿Qué es la Depresión? <span class="srch">🔍</span></div>
+              <div class="edu-item">Causas <span class="srch">🔍</span></div>
+              <div class="edu-item">¿Cómo buscar Ayuda? <span class="srch">🔍</span></div>
+              <div class="edu-item">Sabías que... <span class="srch">🔍</span></div>
+              <div class="edu-item">Tipos de Ansiedad <span class="srch">🔍</span></div>
+              <div class="edu-item">Manejo del Estrés <span class="srch">🔍</span></div>
+              <div class="edu-item">Autoestima y Bienestar <span class="srch">🔍</span></div>
+              <div class="edu-item">¿Cuándo ver a un Profesional? <span class="srch">🔍</span></div>
+            </div>
+          </div>
+
+          <!-- COL 3: Recordatorios -->
+          <div>
+            <div class="rec-col-title">RECORDATORIOS</div>
+            <div class="rec-body" id="home-rec-col"></div>
+          </div>
+
+        </div>
+
+        <div class="hqa" id="hqa-form">
+          <input type="text" id="hqa-input" placeholder="Nuevo recordatorio..." maxlength="60">
+          <div class="hqa-btns">
+            <button class="hqa-save" onclick="saveHQA()">Guardar</button>
+            <button class="hqa-cancel" onclick="closeHQA()">Cancelar</button>
+          </div>
+        </div>
+
+        <div class="bottom-rows">
+          <div class="bottom-row" onclick="openDrw('drw-registro')">
+            <span class="heart">💙</span>
+            <span class="txt">Registrar mi estado</span>
+            <span class="arr2">›</span>
+          </div>
+          <div class="bottom-row" onclick="openDrw('drw-historial')">
+            <span class="heart">💙</span>
+            <span class="txt">Historial Emocional</span>
+            <span class="arr2">›</span>
+          </div>
+          <div class="bottom-row" onclick="showToast('🚨 Servicio de emergencias: 112 · Línea de crisis: 800-290-0024')">
+            <span class="heart">💙</span>
+            <span class="txt">Contactos de Emergencia</span>
+            <span class="arr2">›</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOBRE NOSOTROS -->
+<section id="sec-sobre" class="section">
+
+  <div class="edu-hero">
+    <div class="edu-title">
+      <h1>SOBRE<br>NOSOTROS</h1>
+    </div>
+
+    <div class="edu-text">
+      <p>
+        AnimoBOT fue desarrollado por un equipo de estudiantes comprometidos
+        con el bienestar emocional y la salud mental.
+      </p>
+      <p>
+        Nuestro objetivo es ofrecer herramientas sencillas que ayuden a las
+        personas a comprender mejor sus emociones y fomentar el cuidado de la
+        salud mental.
+      </p>
+    </div>
+  </div>
+
+  <div class="dev-container">
+
+    <h2 class="dev-title">DESARROLLADORES</h2>
+
+    <div class="dev-cards">
+
+      <div class="dev-card">
+        <h3>Angelina Correa López</h3>
+        <p>Desarrollo Frontend</p>
+        <p>Desarrollo Backend</p>
+        <p>Diseño y Documentación</p>
+      </div>
+
+      <div class="dev-card">
+        <h3>María Ximena Pinzón</h3>
+        <p>Desarrollo De juegos</p>
+      </div>
+
+      <div class="dev-card">
+        <h3>Luis Ángel Lancheros</h3>
+        <p>Desarrollo De juegos</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+    <!-- ASISTENTE IA -->
+    <section id="sec-asistente" class="section">
+      <div class="info-hero">
+        <div class="big">🤖</div>
+        <h2>Asistente IA</h2>
+        <p>AnimoBOT está aquí para escucharte, acompañarte y brindarte apoyo emocional en cualquier momento del día.</p>
+      </div>
+      <div class="info-cards">
+        <div class="info-card"><span class="ii">💬</span><div><h4>Conversación Empática</h4><p>AnimoBOT está entrenado para escucharte sin juzgar, ofreciendo respuestas comprensivas y orientadoras.</p></div></div>
+        <div class="info-card"><span class="ii">🕐</span><div><h4>Disponible 24/7</h4><p>Sin importar la hora, AnimoBOT está disponible para ti. Nunca estarás solo en momentos difíciles.</p></div></div>
+        <div class="info-card"><span class="ii">🔒</span><div><h4>Confidencial y Seguro</h4><p>Todo lo que compartes con AnimoBOT es privado. Tu bienestar y privacidad son nuestra prioridad.</p></div></div>
+        <div class="info-card" style="background:#e8eeff"><span class="ii">🚧</span><div><h4>Próximamente</h4><p>El chat con AnimoBOT estará disponible muy pronto. ¡Mantente al tanto!</p></div></div>
+      </div>
+    </section>
+
+    <!-- ACTIVIDADES -->
+    <section id="sec-actividades" class="section">
+      <div class="act-hero">
+        <h2>🎯 Actividades</h2>
+        <p>Herramientas prácticas para registrar tus emociones, hacer seguimiento a tu estado emocional y acceder a actividades diseñadas para ayudarte a sentirte mejor.</p>
+      </div>
+      <div class="act-content">
+        <div class="flow-box">
+          <div class="flow-t">FLUJO DE ACTIVIDADES</div>
+          <div class="flow-col">
+            <div class="flow-node">📋 Actividades</div>
+            <div class="flow-arr">↓</div>
+            <div class="flow-node">😊 Registro de Estado</div>
+            <div class="flow-arr">↓</div>
+            <div class="flow-node">📊 Seguimiento Emocional</div>
+            <div class="flow-arr">↓</div>
+            <div class="flow-node">📁 Historial Emocional</div>
+            <div class="flow-arr">↓</div>
+            <div class="flow-split">
+              <div class="flow-branch">🎮 Juegos</div>
+              <div class="flow-branch">🔔 Recordatorios</div>
+            </div>
+          </div>
+        </div>
+        <div class="act-grid">
+          <div class="act-card" onclick="openDrw('drw-registro')"><div class="ac-ic">😊</div><h4>Registro de Estado</h4><p>Selecciona cómo te sientes</p></div>
+          <div class="act-card" onclick="openDrw('drw-seguimiento')"><div class="ac-ic">📊</div><h4>Seguimiento Emocional</h4><p>Ve tus tendencias</p></div>
+          <div class="act-card" onclick="openDrw('drw-historial')"><div class="ac-ic">📁</div><h4>Historial Emocional</h4><p>Todos tus registros</p></div>
+          <div class="act-card" onclick="openDrw('drw-juegos')"><div class="ac-ic">🐞</div><h4>Juegos de Bienestar</h4><p>Actividades relajantes</p></div>
+          <div class="act-card" onclick="window.location.href='juego.html'"><div class="ac-ic">🎮</div><h4>Juegos</h4><p>Juega y diviertete</p></div>
+          <div class="act-card" onclick="openDrw('drw-recordatorios')"><div class="ac-ic">🔔</div><h4>Recordatorios</h4><p>Crea, edita y elimina tus recordatorios personales</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMUNIDAD -->
+    <section id="sec-comunidad" class="section">
+      <div class="info-hero" style="background:linear-gradient(150deg,#c4b8f0,#d8d0ff)">
+        <div class="big">🌸</div>
+        <h2>Comunidad</h2>
+        <p>Un espacio seguro donde compartir experiencias, recibir apoyo y conectar con personas que entienden lo que sientes.</p>
+      </div>
+      <div class="info-cards">
+        <div class="info-card"><span class="ii">💙</span><div><h4>Consejos entre Usuarios</h4><p>Aprende de las experiencias de otros y comparte lo que a ti te ha funcionado para gestionar tus emociones.</p></div></div>
+        <div class="info-card"><span class="ii">⭐</span><div><h4>Historias de Superación</h4><p>Lee testimonios inspiradores de personas que han atravesado momentos difíciles y encontraron su camino.</p></div></div>
+        <div class="info-card"><span class="ii">👥</span><div><h4>Grupos de Apoyo</h4><p>Únete a grupos temáticos sobre ansiedad, depresión, autoestima y más con personas afines.</p></div></div>
+        <div class="info-card" style="flex-direction:column">
+          <span class="ii">🏷️</span>
+          <h4 style="margin-bottom:8px">Temas populares</h4>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span style="background:#e8eeff;color:#5a6ec8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">#ansiedad</span>
+            <span style="background:#e8eeff;color:#5a6ec8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">#autoestima</span>
+            <span style="background:#e8eeff;color:#5a6ec8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">#meditación</span>
+            <span style="background:#e8eeff;color:#5a6ec8;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">#mindfulness</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- DRAWERS -->
+<div class="overlay" id="drw-registro" onclick="ckOverlay(event,'drw-registro')">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head"><h3>😊 Registro de Estado</h3><button class="btn-x" onclick="closeDrw('drw-registro')">✕</button></div>
+    <div class="drawer-body">
+      <p style="font-size:12.5px;color:var(--mid-text);margin-bottom:13px">¿Cómo te sientes hoy?</p>
+      <div class="ep-grid">
+        <button class="ep-btn" data-e="Muy feliz" onclick="pickEmo(this)">😄<span>Muy feliz</span></button>
+        <button class="ep-btn" data-e="Feliz" onclick="pickEmo(this)">😊<span>Feliz</span></button>
+        <button class="ep-btn" data-e="Neutral" onclick="pickEmo(this)">😐<span>Neutral</span></button>
+        <button class="ep-btn" data-e="Triste" onclick="pickEmo(this)">😢<span>Triste</span></button>
+        <button class="ep-btn" data-e="Ansioso" onclick="pickEmo(this)">😰<span>Ansioso</span></button>
+        <button class="ep-btn" data-e="Enojado" onclick="pickEmo(this)">😠<span>Enojado</span></button>
+        <button class="ep-btn" data-e="Cansado" onclick="pickEmo(this)">😴<span>Cansado</span></button>
+        <button class="ep-btn" data-e="Esperanza" onclick="pickEmo(this)">🌟<span>Esperanza</span></button>
+        <button class="ep-btn" data-e="Amado" onclick="pickEmo(this)">🥰<span>Amado</span></button>
+        <button class="ep-btn" data-e="Confuso" onclick="pickEmo(this)">😕<span>Confuso</span></button>
+      </div>
+      <textarea class="note" id="emo-note" placeholder="Escribe cómo te sientes (opcional)..."></textarea>
+      <button class="btn-pri" onclick="saveEmo()">💾 Guardar Registro</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="drw-seguimiento" onclick="ckOverlay(event,'drw-seguimiento')">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head"><h3>📊 Seguimiento Emocional</h3><button class="btn-x" onclick="closeDrw('drw-seguimiento')">✕</button></div>
+    <div class="drawer-body" id="seg-body"></div>
+  </div>
+</div>
+
+<div class="overlay" id="drw-historial" onclick="ckOverlay(event,'drw-historial')">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head"><h3>📁 Historial Emocional</h3><button class="btn-x" onclick="closeDrw('drw-historial')">✕</button></div>
+    <div class="drawer-body" id="hist-body"></div>
+  </div>
+</div>
+
+<div class="overlay" id="drw-juegos" onclick="ckOverlay(event,'drw-juegos')">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head"><h3>🎮 Juegos de Bienestar</h3><button class="btn-x" onclick="closeDrw('drw-juegos')">✕</button></div>
+    <div class="drawer-body">
+      <div class="game-list">
+        <div class="g-card" onclick="loadGame('breath')"><h4>🌬️ Respiración Guiada</h4><p>Ejercicio para reducir el estrés en minutos.</p></div>
+        <div class="g-card" onclick="loadGame('quotes')"><h4>💫 Frases Positivas</h4><p>Palabras de aliento y motivación para tu día.</p></div>
+        <div class="g-card" onclick="loadGame('relax')"><h4>🌈 Juego de Relajación</h4><p>Juego de memoria con colores para calmar la mente.</p></div>
+      </div>
+      <div id="game-area" style="margin-top:14px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="drw-recordatorios" onclick="ckOverlay(event,'drw-recordatorios')">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head"><h3>🔔 Recordatorios</h3><button class="btn-x" onclick="closeDrw('drw-recordatorios')">✕</button></div>
+    <div class="drawer-body">
+      <div class="sug-row">
+        <span class="sug" onclick="fillDrwRec('💧 Tomar agua')">💧 Tomar agua</span>
+        <span class="sug" onclick="fillDrwRec('😴 Descansar')">😴 Descansar</span>
+        <span class="sug" onclick="fillDrwRec('🌬️ Respirar profundo')">🌬️ Respirar</span>
+        <span class="sug" onclick="fillDrwRec('🚶 Salir a caminar')">🚶 Caminar</span>
+        <span class="sug" onclick="fillDrwRec('🧘 Meditar')">🧘 Meditar</span>
+      </div>
+      <div class="rec-add-row">
+        <input type="text" id="drw-rec-input" placeholder="Escribe tu recordatorio..." maxlength="70">
+        <button onclick="saveDrwRec()">+</button>
+      </div>
+      <div class="rec-list-full" id="drw-rec-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>
