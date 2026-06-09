@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Juego de Baloncesto Pastel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #ffefd5 0%, #f8e6ff 35%, #d7f1ff 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .game-shell {
+      width: 380px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #ffe4e1;
+      border-radius: 24px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 18px 22px;
+      background: #fffaf3;
+      border-bottom: 1px solid #f4d7d2;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      color: #865e7f;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      color: #7a6c7b;
+      font-size: 14px;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 22px;
+      background: #fef6ff;
+      gap: 10px;
+    }
+
+    .status-card {
+      background: #fff;
+      border: 1px solid #e6d7e8;
+      border-radius: 16px;
+      padding: 12px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .status-card strong {
+      display: block;
+      font-size: 18px;
+      color: #675065;
+      margin-bottom: 4px;
+    }
+
+    .status-card span {
+      color: #9e8b9e;
+      font-size: 13px;
+    }
+
+    .court {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.8), transparent 45%),
+        linear-gradient(180deg, #f8f1ff 0%, #fff5f8 55%, #ffe9e9 100%);
+      overflow: hidden;
+    }
+
+    .hoop {
+      position: absolute;
+      width: 120px;
+      height: 16px;
+      top: 70px;
+      left: 50px;
+      border-radius: 20px;
+      background: linear-gradient(90deg, #f8a5c2, #ffd5e5);
+      box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.6);
+      transform-origin: center;
+      animation: sway 2.2s ease-in-out infinite;
+    }
+
+    .rim {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92px;
+      height: 10px;
+      border-radius: 40px;
+      background: #ff7a8a;
+      box-shadow: 0 0 8px rgba(255, 122, 138, 0.5);
+    }
+
+    .net {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 70px;
+      border-left: 3px solid rgba(255, 255, 255, 0.9);
+      border-right: 3px solid rgba(255, 255, 255, 0.9);
+      background-image: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.85) 2px, transparent 3px);
+      background-size: 12px 18px;
+      opacity: 0.95;
+      clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
+    }
+
+  .aim-line {
+  display: none;
+}
+
+    .ball {
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffd1a9, #ff9b6d);
+      box-shadow: inset -4px -4px 0 rgba(255, 255, 255, 0.6);
+      border: 3px solid #ff8a6d;
+      left: calc(50% - 21px);
+      bottom: 22px;
+      transition: transform 0.2s ease;
+    }
+
+    .ball::before,
+    .ball::after {
+      content: "";
+      position: absolute;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 999px;
+    }
+
+    .ball::before {
+      width: 30px;
+      height: 4px;
+      top: 19px;
+      left: 6px;
+    }
+
+    .ball::after {
+      width: 4px;
+      height: 30px;
+      top: 6px;
+      left: 19px;
+    }
+
+    .message {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      color: #8a7598;
+      border: 1px solid #e2d6e7;
+      padding: 16px 18px;
+      border-radius: 18px;
+      text-align: center;
+      width: 84%;
+      display: none;
+    }
+
+    .message.visible {
+      display: block;
+    }
+
+    .message span {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .message button {
+      border: none;
+      background: #ffb3c8;
+      color: #6b3d5a;
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .footer {
+      padding: 15px 22px 22px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      cursor: pointer;
+      background: #f5d9ff;
+      color: #684c7e;
+      border: 2px solid #f1b7ff;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 700;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      background: #ffebf7;
+    }
+
+    @keyframes sway {
+      0%, 100% { transform: translateX(-50%) rotate(-8deg); }
+      50% { transform: translateX(-50%) rotate(8deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <div class="header">
+      <h1>Juego de Baloncesto</h1>
+      <p>Haz clic para lanzar la pelota. Tienes 4 intentos por ronda.</p>
+    </div>
+    <div class="status-row">
+      <div class="status-card">
+        <strong id="score">0</strong>
+        <span>Puntos</span>
+      </div>
+      <div class="status-card">
+        <strong id="level">1</strong>
+        <span>Nivel</span>
+      </div>
+      <div class="status-card">
+        <strong id="tries">4</strong>
+        <span>Intentos</span>
+      </div>
+    </div>
+    <div class="court" id="court">
+      <div class="hoop" id="hoop">
+        <div class="rim"></div>
+        <div class="net"></div>
+      </div>
+      <div class="aim-line" id="aimLine"></div>
+      <div class="ball" id="ball"></div>
+      <div class="message" id="message">
+        <span id="messageText">¡Listo para lanzar!</span>
+        <button id="restartBtn">Reiniciar</button>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="action-btn" id="launchBtn">Lanzar</button>
+    </div>
+  </div>
+  <script>
+    const hoop = document.getElementById('hoop');
+    const ball = document.getElementById('ball');
+    const scoreEl = document.getElementById('score');
+    const levelEl = document.getElementById('level');
+    const triesEl = document.getElementById('tries');
+    const message = document.getElementById('message');
+    const messageText = document.getElementById('messageText');
+    const launchBtn = document.getElementById('launchBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const court = document.getElementById('court');
+    const aimLine = document.getElementById('aimLine');
+
+    let score = 0;
+    let level = 1;
+    let tries = 4;
+    let isThrowing = false;
+    let hoopSpeed = 1.8;
+    let hoopDirection = 1;
+    let hoopVertical = false;
+    let verticalDirection = 1;
+    let hoopX = 50;
+    let hoopY = 70;
+    let ballLeft = 0;
+    let ballStartLeft = 0;
+    let animationFrame;
+
+    function updateStatus() {
+      scoreEl.textContent = score;
+      levelEl.textContent = level;
+      triesEl.textContent = tries;
+    }
+
+    function setMessage(text, show = true) {
+      messageText.textContent = text;
+      message.classList.toggle('visible', show);
+    }
+
+    function updateAim() {
+      if (isThrowing) return;
+      const courtRect = court.getBoundingClientRect();
+      const hoopRect = hoop.getBoundingClientRect();
+      const ballRect = ball.getBoundingClientRect();
+      const ballCenterX = ballRect.left + ballRect.width / 2;
+      const ballCenterY = ballRect.top + ballRect.height / 2;
+      const hoopCenterX = hoopRect.left + hoopRect.width / 2;
+      const hoopCenterY = hoopRect.top + hoopRect.height / 2;
+      const dx = hoopCenterX - ballCenterX;
+      const dy = hoopCenterY - ballCenterY;
+      const angle = Math.atan2(dy, dx);
+      const distance = Math.max(50, Math.sqrt(dx * dx + dy * dy));
+
+      aimLine.style.width = `${distance}px`;
+      aimLine.style.left = `${ballCenterX - courtRect.left}px`;
+      aimLine.style.top = `${ballCenterY - courtRect.top}px`;
+      aimLine.style.transform = `rotate(${angle}rad)`;
+      ball.style.transform = `rotate(${angle}rad)`;
+    }
+
+    function resetGame() {
+      score = 0;
+      level = 1;
+      tries = 4;
+      hoopSpeed = 1.8;
+      hoopX = 50;
+      hoopY = 70;
+      hoopVertical = false;
+      ballLeft = ballStartLeft;
+      isThrowing = false;
+      ball.style.left = `${ballLeft}px`;
+      ball.style.bottom = '22px';
+      hoop.style.top = `${hoopY}px`;
+      hoop.style.left = `${hoopX}px`;
+      updateStatus();
+      setMessage('¡Listo para lanzar!', false);
+      updateAim();
+    }
+
+    function nextLevel() {
+      level += 1;
+      hoopSpeed += 0.4;
+      if (level >= 3) {
+        hoopVertical = true;
+        verticalDirection = 1;
+      }
+      updateStatus();
+      setMessage(`¡Anotaste! Nivel ${level}`, true);
+      setTimeout(() => setMessage('Lanza de nuevo', false), 1200);
+    }
+
+    function gameOver() {
+      setMessage('Perdiste. Reiniciando el juego...', true);
+      setTimeout(resetGame, 1800);
+    }
+
+    function animateHoop() {
+      const courtWidth = court.clientWidth;
+      const maxLeft = courtWidth - 120 - 20;
+      hoopX += hoopDirection * hoopSpeed * 0.4;
+      if (hoopX <= 10 || hoopX >= maxLeft) {
+        hoopDirection *= -1;
+      }
+
+      const percentX = Math.max(10, Math.min(hoopX, maxLeft));
+      hoop.style.left = `${percentX}px`;
+
+      if (hoopVertical) {
+        hoopY += verticalDirection * hoopSpeed * 0.25;
+        if (hoopY <= 40 || hoopY >= 140) {
+          verticalDirection *= -1;
+        }
+        hoop.style.top = `${hoopY}px`;
+      }
+
+      updateAim();
+      animationFrame = requestAnimationFrame(animateHoop);
+    }
+
+    function launchBall() {
+      if (isThrowing) return;
+      isThrowing = true;
+      const courtRect = court.getBoundingClientRect();
+      const hoopRect = hoop.getBoundingClientRect();
+      const rimRect = hoop.querySelector('.rim').getBoundingClientRect();
+      const startLeft = ballLeft;
+      const targetX = hoopRect.left - courtRect.left + hoopRect.width / 2 - 21;
+      const deltaX = targetX - startLeft;
+      const startBottom = 22;
+      const peakHeight = 340;
+      const duration = 1200;
+      const startTime = Date.now();
+      const minHeightToRim = court.clientHeight - (rimRect.bottom - courtRect.top) - startBottom;
+
+      function move() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const height = startBottom + peakHeight * (4 * progress * (1 - progress));
+        const x = startLeft + deltaX * progress;
+        ball.style.bottom = `${height}px`;
+        ball.style.left = `${x}px`;
+        ballLeft = x;
+
+        if (progress < 1) {
+          requestAnimationFrame(move);
+        } else {
+          const ballRect = ball.getBoundingClientRect();
+          const ballCenterX = ballRect.left + ballRect.width / 2;
+          const rimLeft = rimRect.left + 10;
+          const rimRight = rimRect.right - 10;
+
+          const scored = ballCenterX >= rimLeft && ballCenterX <= rimRight && peakHeight >= minHeightToRim;
+          if (scored) {
+            score += 1;
+            nextLevel();
+          } else {
+            tries -= 1;
+            if (tries <= 0) {
+              gameOver();
+            } else {
+              setMessage(`Intento fallido. Te quedan ${tries} intentos.`, true);
+              setTimeout(() => setMessage('Intenta de nuevo', false), 1300);
+            }
+          }
+
+          ball.style.bottom = '22px';
+          ball.style.left = `${ballStartLeft}px`;
+          ballLeft = ballStartLeft;
+          isThrowing = false;
+          updateStatus();
+          updateAim();
+        }
+      }
+
+      move();
+    }
+
+    launchBtn.addEventListener('click', launchBall);
+    restartBtn.addEventListener('click', resetGame);
+    court.addEventListener('click', launchBall);
+
+    window.addEventListener('load', () => {
+      const courtRect = court.getBoundingClientRect();
+      ballStartLeft = Math.round((courtRect.width - 42) / 2);
+      ballLeft = ballStartLeft;
+      ball.style.left = `${ballLeft}px`;
+      updateStatus();
+      animateHoop();
+      updateAim();
+      setMessage('¡Listo para lanzar!', false);
+    });
+  </script>
+</body>
+</html>

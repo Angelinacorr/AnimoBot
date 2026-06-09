@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pista de Carrera con Obstáculos</title>
+  <style>
+    :root {
+      --fondo: #0b1220;
+      --tarjeta: rgba(255,255,255,0.08);
+      --texto: #f7f7ff;
+      --acento: #c46fff;
+      --acento-oscuro: #8f41b7;
+      --obstaculo: #ff8c84;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1f2c54 0%, #0b1220 70%);
+      color: var(--texto);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .contenedor {
+      width: min(980px, 100%);
+      padding: 24px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(18, 26, 56, 0.95), rgba(8, 12, 30, 0.95));
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+
+    .titulo {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .titulo h1 {
+      font-size: clamp(2rem, 3vw, 3rem);
+      letter-spacing: 1.2px;
+      color: #ecf1ff;
+    }
+
+    .titulo p {
+      color: #bfc9ff;
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+
+    .info {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .info div {
+      background: var(--tarjeta);
+      padding: 12px 18px;
+      border-radius: 16px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .info div span {
+      display: block;
+      font-size: 0.85rem;
+      color: #b9c0ff;
+      margin-bottom: 4px;
+    }
+
+    .info div strong {
+      font-size: 1.25rem;
+      color: #fff;
+    }
+
+    .juego {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    canvas {
+      width: 100%;
+      border-radius: 24px;
+      background: linear-gradient(180deg, #11182f 0%, #0c1222 100%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07), 0 24px 60px rgba(0,0,0,0.35);
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-height: 330px;
+    }
+
+    .panel h2 {
+      margin-bottom: 14px;
+      color: #f4efff;
+    }
+
+    .panel p {
+      line-height: 1.6;
+      color: #c5c7ff;
+    }
+
+    .botonera {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 18px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #b07ff6, #7d49d5);
+      color: white;
+      font-weight: 700;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 12px 30px rgba(125, 73, 213, 0.35);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 38px rgba(125, 73, 213, 0.45);
+    }
+
+    .teclas {
+      display: grid;
+      gap: 10px;
+      background: rgba(255,255,255,0.05);
+      padding: 16px;
+      border-radius: 18px;
+    }
+
+    .tecla {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      color: #e5e9ff;
+      font-size: 0.95rem;
+    }
+
+    .mensaje {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(111, 63, 169, 0.15);
+      color: #f5ecff;
+      font-weight: 600;
+      min-height: 64px;
+    }
+
+    @media (max-width: 860px) {
+      .juego {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <div class="titulo">
+      <h1>Pista de Carrera con Obstáculos</h1>
+      <p>Conduce tu carrito lila usando las letras A, D, W y S. Cada nivel sube de dificultad.</p>
+    </div>
+
+    <div class="info">
+      <div>
+        <span>Nivel</span>
+        <strong id="nivel">1</strong>
+      </div>
+      <div>
+        <span>Puntaje</span>
+        <strong id="puntaje">0</strong>
+      </div>
+      <div>
+        <span>Vidas</span>
+        <strong id="vidas">3</strong>
+      </div>
+    </div>
+
+    <div class="juego">
+      <canvas id="pista" width="860" height="540"></canvas>
+      <div class="panel">
+        <div>
+          <h2>Cómo jugar</h2>
+          <p>Desliza tu carrito lila para esquivar obstáculos y llegar al final de cada nivel. El juego se vuelve más difícil con más obstáculos y velocidades mayores.</p>
+        </div>
+
+        <div class="teclas">
+          <div class="tecla"><span>A</span><strong>Izquierda</strong></div>
+          <div class="tecla"><span>D</span><strong>Derecha</strong></div>
+          <div class="tecla"><span>W</span><strong>Arriba</strong></div>
+          <div class="tecla"><span>S</span><strong>Abajo</strong></div>
+        </div>
+
+        <div class="botonera">
+          <button id="reiniciar">Reiniciar</button>
+          <button id="siguiente">Siguiente Nivel</button>
+        </div>
+
+        <div class="mensaje" id="mensaje">Presiona "Reiniciar" para comenzar.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('pista');
+    const ctx = canvas.getContext('2d');
+    const nivelEl = document.getElementById('nivel');
+    const puntajeEl = document.getElementById('puntaje');
+    const vidasEl = document.getElementById('vidas');
+    const mensajeEl = document.getElementById('mensaje');
+    const reiniciarBtn = document.getElementById('reiniciar');
+    const siguienteBtn = document.getElementById('siguiente');
+
+    const ancho = canvas.width;
+    const alto = canvas.height;
+    const carro = {
+      x: ancho / 2 - 22,
+      y: alto - 120,
+      ancho: 44,
+      alto: 70,
+      velocidad: 6,
+      color: '#b264ff'
+    };
+
+    let nivel = 1;
+    let puntaje = 0;
+    let vidas = 3;
+    let jugando = false;
+    let progreso = 0;
+    let obstaculos = [];
+    let teclas = { a: false, d: false, w: false, s: false };
+    let velocidadObstaculos = 2;
+    let objetivoNivel = 1000;
+
+    function inicializar() {
+      nivel = 1;
+      puntaje = 0;
+      vidas = 3;
+      obstaculos = [];
+      progreso = 0;
+      velocidadObstaculos = 2;
+      objetivoNivel = 1000;
+      actualizarInterfaz();
+      mensajeEl.textContent = 'Presiona "Reiniciar" para comenzar.';
+      dibujar();
+    }
+
+    function iniciarJuego() {
+      if (!jugando) {
+        jugando = true;
+        mensajeEl.textContent = '¡Corre! Evita los obstáculos y llega al final.';
+        obstaculos = crearObstaculos(nivel);
+        ventanaSolicitarCuadro();
+      }
+    }
+
+    function ventanaSolicitarCuadro() {
+      if (jugando) {
+        actualizar();
+        dibujar();
+        requestAnimationFrame(ventanaSolicitarCuadro);
+      }
+    }
+
+    function crearObstaculos(n) {
+      const cantidad = 5 + n * 2;
+      const lista = [];
+      for (let i = 0; i < cantidad; i++) {
+        const tamaño = 28 + Math.random() * 40;
+        lista.push({
+          x: Math.random() * (ancho - tamaño - 60) + 30,
+          y: -Math.random() * 1200 - i * 140,
+          ancho: tamaño,
+          alto: tamaño * 0.7,
+          velocidad: velocidadObstaculos + Math.random() * 1.4,
+          color: `rgba(255, 140, 132, ${0.6 + Math.random() * 0.4})`
+        });
+      }
+      return lista;
+    }
+
+    function actualizar() {
+      moverCarro();
+      moverObstaculos();
+      comprobarColisiones();
+      progreso += 1;
+      puntaje += 1;
+      if (progreso >= objetivoNivel) {
+        terminarNivel();
+      }
+      if (vidas <= 0) {
+        perderJuego();
+      }
+      actualizarInterfaz();
+    }
+
+    function moverCarro() {
+      if (teclas.a) carro.x -= carro.velocidad;
+      if (teclas.d) carro.x += carro.velocidad;
+      if (teclas.w) carro.y -= carro.velocidad;
+      if (teclas.s) carro.y += carro.velocidad;
+      carro.x = Math.max(24, Math.min(ancho - carro.ancho - 24, carro.x));
+      carro.y = Math.max(24, Math.min(alto - carro.alto - 24, carro.y));
+    }
+
+    function moverObstaculos() {
+      obstaculos.forEach(obstaculo => {
+        obstaculo.y += obstaculo.velocidad;
+        if (obstaculo.y > alto + 50) {
+          obstaculo.y = -Math.random() * 300 - 80;
+          obstaculo.x = Math.random() * (ancho - obstaculo.ancho - 60) + 30;
+          obstaculo.velocidad = velocidadObstaculos + Math.random() * 1.4;
+        }
+      });
+    }
+
+    function comprobarColisiones() {
+      obstaculos.forEach(obstaculo => {
+        if (
+          carro.x < obstaculo.x + obstaculo.ancho &&
+          carro.x + carro.ancho > obstaculo.x &&
+          carro.y < obstaculo.y + obstaculo.alto &&
+          carro.y + carro.alto > obstaculo.y
+        ) {
+          obstaculo.y = alto + 100;
+          vidas -= 1;
+          puntaje = Math.max(0, puntaje - 80);
+        }
+      });
+    }
+
+    function terminarNivel() {
+      nivel += 1;
+      progreso = 0;
+      velocidadObstaculos += 0.8;
+      objetivoNivel += 500;
+      obstaculos = crearObstaculos(nivel);
+      mensajeEl.textContent = `¡Nivel ${nivel} alcanzado! Obstáculos más rápidos y más desafiantes.`;
+    }
+
+    function perderJuego() {
+      jugando = false;
+      mensajeEl.textContent = 'Juego terminado. Pulsa Reiniciar para volver a jugar.';
+      obstaculos = [];
+    }
+
+    function actualizarInterfaz() {
+      nivelEl.textContent = nivel;
+      puntajeEl.textContent = puntaje;
+      vidasEl.textContent = vidas;
+    }
+
+    function dibujar() {
+      ctx.clearRect(0, 0, ancho, alto);
+      dibujarPista();
+      dibujarCarro();
+      dibujarObstaculos();
+      dibujarMeta();
+    }
+
+    function dibujarPista() {
+      const grad = ctx.createLinearGradient(0, 0, 0, alto);
+      grad.addColorStop(0, 'rgba(42, 62, 95, 0.95)');
+      grad.addColorStop(1, 'rgba(11, 18, 34, 0.95)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, ancho, alto);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(12, 12, ancho - 24, alto - 24);
+      for (let i = 0; i < 14; i++) {
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.fillRect(ancho / 2 - 4, i * 72 + ((Date.now() / 20) % 72), 8, 40);
+      }
+      ctx.fillStyle = '#5f49c4';
+      ctx.fillRect(18, 18, 20, alto - 36);
+      ctx.fillRect(ancho - 38, 18, 20, alto - 36);
+    }
+
+    function dibujarCarro() {
+      ctx.save();
+      ctx.fillStyle = carro.color;
+      ctx.shadowColor = 'rgba(196, 111, 255, 0.68)';
+      ctx.shadowBlur = 16;
+      ctx.fillRect(carro.x, carro.y, carro.ancho, carro.alto);
+      ctx.restore();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(carro.x + 10, carro.y + 12, 24, 12);
+      ctx.fillStyle = '#ad7bed';
+      ctx.fillRect(carro.x + 10, carro.y + carro.alto - 24, 24, 14);
+    }
+
+    function dibujarObstaculos() {
+      obstaculos.forEach(obstaculo => {
+        ctx.fillStyle = obstaculo.color;
+        ctx.shadowColor = 'rgba(255, 140, 132, 0.45)';
+        ctx.shadowBlur = 12;
+        ctx.fillRect(obstaculo.x, obstaculo.y, obstaculo.ancho, obstaculo.alto);
+      });
+      ctx.shadowBlur = 0;
+    }
+
+    function dibujarMeta() {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.fillRect(32, 14, ancho - 64, 12);
+      ctx.fillStyle = '#c4b8ff';
+      ctx.font = '600 20px Segoe UI';
+      ctx.fillText('META: Avanza hasta alcanzar el puntaje de nivel', 42, 32);
+    }
+
+    window.addEventListener('keydown', event => {
+      const tecla = event.key.toLowerCase();
+      if (tecla in teclas) {
+        teclas[tecla] = true;
+        iniciarJuego();
+      }
+    });
+
+    window.addEventListener('keyup', event => {
+      const tecla = event.key.toLowerCase();
+      if (tecla in teclas) {
+        teclas[tecla] = false;
+      }
+    });
+
+    reiniciarBtn.addEventListener('click', () => {
+      inicializar();
+      iniciarJuego();
+    });
+
+    siguienteBtn.addEventListener('click', () => {
+      if (!jugando) {
+        iniciarJuego();
+      } else {
+        terminarNivel();
+      }
+    });
+
+    inicializar();
+  </script>
+</body>
+</html>

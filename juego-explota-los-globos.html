@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Explota Globos - Juego de Arco</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 900px;
+            height: 600px;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+            border: 5px solid #333;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 100;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .coin {
+            font-size: 28px;
+        }
+
+        /* Arco */
+        #bow {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 120px;
+            cursor: crosshair;
+            z-index: 50;
+        }
+
+        .bow-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 100px;
+            background: #7B3FF2;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .bow-top, .bow-bottom {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 15px;
+            background: #7B3FF2;
+            border-radius: 50%;
+        }
+
+        .bow-top {
+            top: -8px;
+        }
+
+        .bow-bottom {
+            bottom: -8px;
+        }
+
+        /* Flechas */
+        .arrow {
+            position: absolute;
+            width: 8px;
+            height: 30px;
+            background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 4px;
+            left: 50%;
+            bottom: 100px;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .arrow::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 8px solid #FF8C00;
+        }
+
+        /* Globos */
+        .balloon {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .balloon:hover {
+            transform: scale(1.1);
+        }
+
+        .balloon-shape {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 35% 35%, #FFB6D9, #FF69B4);
+            border-radius: 50%;
+            box-shadow: inset -2px -2px 5px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .balloon-string {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: #FFC0CB;
+        }
+
+        /* Partículas y efectos */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .coin-particle {
+            font-size: 24px;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(0.5);
+            }
+        }
+
+        .pop-effect {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #FF69B4;
+            border-radius: 50%;
+            animation: popEffect 0.4s ease-out forwards;
+        }
+
+        @keyframes popEffect {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* Pantalla de Game Over */
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+            display: none;
+        }
+
+        #gameOverScreen.show {
+            display: flex;
+        }
+
+        .game-over-content h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #FFD700;
+        }
+
+        .game-over-content p {
+            font-size: 32px;
+            margin: 10px 0;
+        }
+
+        .stats {
+            font-size: 24px;
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .stats div {
+            margin: 10px 0;
+        }
+
+        .restart-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: bold;
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .restart-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Controles */
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #333;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 15px;
+            border-radius: 8px;
+            z-index: 50;
+        }
+
+        .level-indicator {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            font-size: 18px;
+            color: white;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div class="level-indicator">Nivel <span id="levelNum">1</span></div>
+        
+        <div id="hud">
+            <div class="hud-item">
+                <span>🎯 Intentos:</span>
+                <span id="attempts">5</span>
+            </div>
+            <div class="hud-item">
+                <span class="coin">💰</span>
+                <span id="coins">0</span>
+            </div>
+            <div class="hud-item">
+                <span>🎈 Globos:</span>
+                <span id="balloonsLeft">5</span>
+            </div>
+        </div>
+
+        <div id="bow">
+            <div class="bow-body"></div>
+            <div class="bow-top"></div>
+            <div class="bow-bottom"></div>
+        </div>
+
+        <div id="controls">🖱️ Mueve el ratón • 🎯 Haz clic para disparar</div>
+
+        <div id="gameOverScreen">
+            <div class="game-over-content">
+                <h1>¡GAME OVER!</h1>
+                <div class="stats">
+                    <div>🎈 Globos explotados: <span id="finalBalloons">0</span></div>
+                    <div>💰 Monedas ganadas: <span id="finalCoins">0</span></div>
+                    <div>📊 Precisión: <span id="finalAccuracy">0</span>%</div>
+                    <div>⭐ Nivel alcanzado: <span id="finalLevel">1</span></div>
+                </div>
+                <button class="restart-btn" onclick="location.reload()">🔄 Jugar de Nuevo</button>
+            </div>
+        </div>
+    </body>
+</body>
+
+<script>
+    const game = {
+        container: document.getElementById('gameContainer'),
+        attempts: 5,
+        maxAttempts: 5,
+        coins: 0,
+        level: 1,
+        balloons: [],
+        arrows: [],
+        balloonsPopped: 0,
+        gameActive: true,
+        balloonSize: 50,
+        arrowSpeed: 15,
+        balloonsPerLevel: 5,
+        balloonSpawnDelay: 800,
+
+        init() {
+            this.bindEvents();
+            this.spawnBalloonsForLevel();
+            this.updateHUD();
+        },
+
+        bindEvents() {
+            document.addEventListener('mousemove', (e) => this.moveBow(e));
+            document.addEventListener('click', () => this.shootArrow());
+            this.container.addEventListener('click', (e) => this.checkBalloonClick(e));
+        },
+
+        moveBow(e) {
+            const bow = document.getElementById('bow');
+            const containerRect = this.container.getBoundingClientRect();
+            const x = e.clientX - containerRect.left;
+            const y = e.clientY - containerRect.top;
+
+            const dx = x - (bow.offsetLeft + bow.offsetWidth / 2);
+            const dy = y - (bow.offsetTop + bow.offsetHeight / 2);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+            bow.style.transform = `translateX(-50%) rotate(${angle + 90}deg)`;
+            bow.angle = angle * Math.PI / 180;
+        },
+
+        shootArrow() {
+            if (!this.gameActive || this.attempts <= 0) return;
+
+            const bow = document.getElementById('bow');
+            const angle = bow.angle;
+            const speed = this.arrowSpeed;
+
+            const arrow = {
+                x: bow.offsetLeft + bow.offsetWidth / 2,
+                y: bow.offsetTop,
+                vx: Math.sin(angle) * speed,
+                vy: Math.cos(angle) * speed * -1,
+                element: this.createArrowElement()
+            };
+
+            this.arrows.push(arrow);
+            this.attempts--;
+            this.updateHUD();
+
+            if (this.attempts <= 0) {
+                this.endGame();
+            }
+        },
+
+        createArrowElement() {
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            this.container.appendChild(arrow);
+            return arrow;
+        },
+
+        spawnBalloonsForLevel() {
+            const count = Math.min(this.balloonsPerLevel + Math.floor(this.level * 0.5), 12);
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => this.spawnBalloon(), i * this.balloonSpawnDelay);
+            }
+        },
+
+        spawnBalloon() {
+            if (!this.gameActive) return;
+
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            
+            const x = Math.random() * (this.container.offsetWidth - this.balloonSize);
+            const y = Math.random() * (this.container.offsetHeight - 200 - this.balloonSize) + 80;
+            
+            balloon.style.left = x + 'px';
+            balloon.style.top = y + 'px';
+            balloon.style.width = this.balloonSize + 'px';
+            balloon.style.height = this.balloonSize + 'px';
+
+            balloon.innerHTML = `
+                <div class="balloon-shape"></div>
+                <div class="balloon-string"></div>
+            `;
+
+            this.container.appendChild(balloon);
+
+            const balloonObj = {
+                x: x + this.balloonSize / 2,
+                y: y + this.balloonSize / 2,
+                radius: this.balloonSize / 2,
+                element: balloon,
+                popped: false
+            };
+
+            this.balloons.push(balloonObj);
+        },
+
+        checkBalloonClick(e) {
+            if (!this.gameActive) return;
+
+            const rect = this.container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            for (let balloon of this.balloons) {
+                if (!balloon.popped) {
+                    const dx = clickX - balloon.x;
+                    const dy = clickY - balloon.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < balloon.radius) {
+                        this.popBalloon(balloon);
+                        return;
+                    }
+                }
+            }
+        },
+
+        update() {
+            // Actualizar flechas
+            for (let i = this.arrows.length - 1; i >= 0; i--) {
+                const arrow = this.arrows[i];
+                arrow.x += arrow.vx;
+                arrow.y += arrow.vy;
+
+                arrow.element.style.left = arrow.x + 'px';
+                arrow.element.style.top = arrow.y + 'px';
+
+                // Colisión con globos
+                for (let balloon of this.balloons) {
+                    if (!balloon.popped) {
+                        const dx = arrow.x - balloon.x;
+                        const dy = arrow.y - balloon.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < balloon.radius) {
+                            this.popBalloon(balloon);
+                            this.arrows.splice(i, 1);
+                            arrow.element.remove();
+                            return;
+                        }
+                    }
+                }
+
+                // Salir de pantalla
+                if (arrow.y < -10 || arrow.x < -10 || arrow.x > this.container.offsetWidth || arrow.y > this.container.offsetHeight) {
+                    arrow.element.remove();
+                    this.arrows.splice(i, 1);
+                }
+            }
+
+            if (this.gameActive) {
+                requestAnimationFrame(() => this.update());
+            }
+        },
+
+        popBalloon(balloon) {
+            if (balloon.popped) return;
+
+            balloon.popped = true;
+            balloon.element.style.opacity = '0';
+            balloon.element.style.transform = 'scale(0.3)';
+            balloon.element.style.transition = 'all 0.3s ease-out';
+
+            // Efecto de explosión
+            const effect = document.createElement('div');
+            effect.className = 'pop-effect';
+            effect.style.left = balloon.x - 20 + 'px';
+            effect.style.top = balloon.y - 20 + 'px';
+            this.container.appendChild(effect);
+
+            setTimeout(() => effect.remove(), 400);
+
+            // Monedas
+            const coinsEarned = 10 + (this.level * 5);
+            this.coins += coinsEarned;
+            this.balloonsPopped++;
+
+            // Partícula de moneda
+            const coinParticle = document.createElement('div');
+            coinParticle.className = 'coin-particle particle';
+            coinParticle.textContent = '+' + coinsEarned + '💰';
+            coinParticle.style.left = balloon.x + 'px';
+            coinParticle.style.top = balloon.y + 'px';
+            this.container.appendChild(coinParticle);
+
+            setTimeout(() => coinParticle.remove(), 1000);
+
+            setTimeout(() => balloon.element.remove(), 300);
+
+            this.updateHUD();
+
+            // Subir de nivel
+            if (this.balloonsPopped % (this.balloonsPerLevel + Math.floor(this.level * 0.5)) === 0) {
+                this.levelUp();
+            }
+        },
+
+        levelUp() {
+            this.level++;
+            this.attempts = this.maxAttempts + Math.floor(this.level * 0.5);
+            this.balloonSize = Math.max(40, 50 - this.level * 2);
+            this.arrowSpeed = 15 + this.level * 0.5;
+            this.balloonSpawnDelay = Math.max(400, 800 - this.level * 50);
+
+            this.updateHUD();
+            this.spawnBalloonsForLevel();
+        },
+
+        updateHUD() {
+            document.getElementById('attempts').textContent = this.attempts;
+            document.getElementById('coins').textContent = this.coins;
+            document.getElementById('balloonsLeft').textContent = this.balloons.filter(b => !b.popped).length;
+            document.getElementById('levelNum').textContent = this.level;
+        },
+
+        endGame() {
+            this.gameActive = false;
+
+            const accuracy = this.balloonsPopped > 0 ? Math.round((this.balloonsPopped / (this.maxAttempts * this.level)) * 100) : 0;
+
+            document.getElementById('finalBalloons').textContent = this.balloonsPopped;
+            document.getElementById('finalCoins').textContent = this.coins;
+            document.getElementById('finalAccuracy').textContent = Math.min(accuracy, 100);
+            document.getElementById('finalLevel').textContent = this.level;
+
+            setTimeout(() => {
+                document.getElementById('gameOverScreen').classList.add('show');
+            }, 500);
+        }
+    };
+
+    // Iniciar juego
+    game.init();
+    game.update();
+</script>

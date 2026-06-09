@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Pastel Parkour</title>
+<style>
+  :root { background:#f7f3ff; color:#4d3d8c; font-family: Inter, sans-serif; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #f8f2ff 0%, #e8f5ff 100%); }
+  .game-container { width:100%; max-width:900px; padding:20px; box-sizing:border-box; }
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:16px; }
+  .panel { background:rgba(255,255,255,.88); border:1px solid rgba(77,61,140,.14); border-radius:20px; box-shadow:0 14px 40px rgba(77,61,140,.08); padding:16px; }
+  h1 { margin:0; font-size:1.6rem; letter-spacing:0.05em; color:#3c2f7a; }
+  p { margin:0; color:#5c5096; }
+  #gameCanvas { width:100%; height:520px; border-radius:24px; background:linear-gradient(180deg, #f4f1ff 0%, #dfe7ff 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.5); }
+  .info { display:grid; grid-template-columns: repeat(3, minmax(100px,1fr)); gap:12px; margin-top:16px; }
+  .badge { text-align:center; }
+  .badge strong { display:block; font-size:1.25rem; color:#2c225f; }
+  button { margin-top:12px; width:100%; padding:12px 16px; border:none; border-radius:999px; background:#8d7cff; color:white; font-weight:700; cursor:pointer; transition:transform .2s ease, background .2s ease; }
+  button:hover { transform:translateY(-2px); background:#6f5bee; }
+  footer { margin-top:18px; color:#5b518a; font-size:0.95rem; text-align:center; }
+</style>
+</head>
+<body>
+<div class="game-container">
+<header>
+  <div class="panel">
+    <h1>Pastel Parkour</h1>
+    <p>Usa A/D o flechas y Espacio para saltar. Llega al portal antes de que se acabe el tiempo.</p>
+  </div>
+  <div class="panel badge">
+    <strong>Roblox Style</strong>
+    <span>Espíritu creativo</span>
+  </div>
+</header>
+<canvas id="gameCanvas" width="900" height="520"></canvas>
+<div class="info">
+  <div class="panel badge"><strong id="score">0</strong>Puntos</div>
+  <div class="panel badge"><strong id="time">60</strong>Segundos</div>
+  <div class="panel badge"><strong id="stage">1</strong>Etapa</div>
+</div>
+<button id="restartBtn">Reiniciar juego</button>
+<footer>Juego ligero inspirado en una experiencia de obby de Roblox</footer>
+</div>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const scoreLabel = document.getElementById("score");
+const timeLabel = document.getElementById("time");
+const stageLabel = document.getElementById("stage");
+const restartBtn = document.getElementById("restartBtn");
+
+const width = canvas.width;
+const height = canvas.height;
+
+const player = { x: 80, y: height - 90, w: 42, h: 52, vx: 0, vy: 0, onGround: false, color: "#7d66ff" };
+const gravity = 0.8;
+const friction = 0.83;
+const jumpPower = 16;
+const maxStage = 4;
+let platforms = [];
+let stars = [];
+let portal = null;
+let keys = {};
+let score = 0;
+let timeLeft = 60;
+let stage = 1;
+let running = true;
+let lastTime = 0;
+let gameOver = false;
+
+function createStage(stageNumber) {
+  platforms = [
+    { x: 0, y: height - 30, w: width, h: 30, color: "#c5b7ff" },
+    { x: 200, y: 420, w: 160, h: 24, color: "#e8d7ff" },
+    { x: 420, y: 340, w: 140, h: 24, color: "#f7e9ff" },
+    { x: 620, y: 270, w: 160, h: 24, color: "#dce7ff" },
+  ];
+  if (stageNumber >= 2) {
+    platforms.push({ x: 340, y: 210, w: 110, h: 24, color: "#f3f1ff" });
+  }
+  if (stageNumber >= 3) {
+    platforms.push({ x: 130, y: 170, w: 120, h: 24, color: "#f9f4ff" });
+  }
+  if (stageNumber >= 4) {
+    platforms.push({ x: 520, y: 120, w: 120, h: 24, color: "#dfe3ff" });
+  }
+
+  stars = [
+    { x: 260, y: 380, collected: false },
+    { x: 460, y: 300, collected: false },
+    { x: 660, y: 230, collected: false },
+  ];
+  if (stageNumber >= 2) stars.push({ x: 360, y: 170, collected: false });
+  if (stageNumber >= 3) stars.push({ x: 180, y: 130, collected: false });
+  if (stageNumber >= 4) stars.push({ x: 540, y: 80, collected: false });
+
+  portal = { x: width - 100, y: height - 85, w: 70, h: 70 };
+  player.x = 80;
+  player.y = height - 90;
+  player.vx = 0;
+  player.vy = 0;
+  player.onGround = false;
+  stageLabel.textContent = stage;
+}
+
+function drawRoundedRect(x,y,w,h,r,color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.fill();
+}
+
+function drawScene() {
+  ctx.clearRect(0,0,width,height);
+  ctx.fillStyle = "#eef0ff";
+  ctx.fillRect(0,0,width,height);
+  const gradient = ctx.createLinearGradient(0,0,0,height);
+  gradient.addColorStop(0,"#fdf7ff");
+  gradient.addColorStop(1,"#dce7ff");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0,0,width,height);
+
+  ctx.fillStyle = "#ffd6f1";
+  ctx.shadowColor = "rgba(255,255,255,0.8)";
+  ctx.shadowBlur = 25;
+  ctx.beginPath();
+  ctx.arc(760,80,60,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  platforms.forEach(p => drawRoundedRect(p.x, p.y, p.w, p.h, 16, p.color));
+  stars.forEach(star => {
+    if (star.collected) return;
+    ctx.save();
+    ctx.translate(star.x, star.y);
+    ctx.fillStyle = "#fff7b8";
+    ctx.beginPath();
+    for (let i=0;i<5;i++){
+      ctx.lineTo(Math.cos((18 + i*72) * Math.PI/180)*12, -Math.sin((18 + i*72) * Math.PI/180)*12);
+      ctx.lineTo(Math.cos((54 + i*72) * Math.PI/180)*5, -Math.sin((54 + i*72) * Math.PI/180)*5);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+
+  ctx.fillStyle = "#a29bff";
+  ctx.fillRect(portal.x, portal.y, portal.w, portal.h);
+  ctx.fillStyle = "#fff";
+  ctx.font = "700 20px Inter,sans-serif";
+  ctx.fillText("GO", portal.x + 18, portal.y + 42);
+
+  drawRoundedRect(player.x, player.y, player.w, player.h, 14, player.color);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(player.x+10, player.y+14, 22, 6);
+  ctx.fillRect(player.x+12, player.y+28, 18, 6);
+  ctx.fillRect(player.x+14, player.y+40, 14, 6);
+}
+
+function collideRect(a,b){
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function updatePhysics(delta) {
+  if (keys.ArrowLeft || keys.KeyA) player.vx = Math.max(player.vx - 1.1, -7);
+  if (keys.ArrowRight || keys.KeyD) player.vx = Math.min(player.vx + 1.1, 7);
+  if (!keys.ArrowLeft && !keys.KeyA && !keys.ArrowRight && !keys.KeyD) player.vx *= friction;
+  player.vy += gravity;
+  player.x += player.vx;
+  player.y += player.vy;
+  if (player.x < 0) player.x = 0, player.vx = 0;
+  if (player.x + player.w > width) player.x = width - player.w, player.vx = 0;
+  if (player.y + player.h > height) { player.y = height - player.h; player.vy = 0; player.onGround = true; }
+
+  player.onGround = false;
+  platforms.forEach(p => {
+    const foot = { x: player.x, y: player.y + player.h, w: player.w, h: 2};
+    if (collideRect(foot, p) && player.vy >= 0 && player.y + player.h - p.y < 25) {
+      player.y = p.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+  });
+
+  if ((keys.Space || keys.KeyW || keys.ArrowUp) && player.onGround) {
+    player.vy = -jumpPower;
+    player.onGround = false;
+  }
+
+  stars.forEach(star => {
+    if (!star.collected && collideRect(player, {x: star.x - 12, y: star.y - 12, w: 24, h: 24})) {
+      star.collected = true;
+      score += 10;
+      scoreLabel.textContent = score;
+    }
+  });
+
+  if (collideRect(player, portal)) {
+    stage++;
+    if (stage > maxStage) {
+      running = false;
+      gameOver = true;
+      return;
+    }
+    createStage(stage);
+    timeLeft = Math.max(30, 60 - stage * 10);
+  }
+}
+
+function drawOverlay() {
+  if (gameOver) {
+    ctx.fillStyle = "rgba(15, 10, 48, 0.72)";
+    ctx.fillRect(0,0,width,height);
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 42px Inter,sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("¡Felicidades!", width/2, height/2 - 20);
+    ctx.font = "600 20px Inter,sans-serif";
+    ctx.fillText("Completaste Pastel Parkour", width/2, height/2 + 20);
+    ctx.textAlign = "start";
+  }
+}
+
+function gameLoop(timestamp) {
+  if (!lastTime) lastTime = timestamp;
+  const delta = timestamp - lastTime;
+  lastTime = timestamp;
+  if (running) {
+    updatePhysics(delta);
+    drawScene();
+    drawOverlay();
+    requestAnimationFrame(gameLoop);
+  } else {
+    drawScene();
+    drawOverlay();
+  }
+}
+
+function tickTimer() {
+  if (!running) return;
+  timeLeft--;
+  timeLabel.textContent = timeLeft;
+  if (timeLeft <= 0) {
+    running = false;
+    gameOver = true;
+  }
+}
+window.addEventListener("keydown", e => {
+  keys[e.code] = true;
+  if (["Space","ArrowUp","KeyW"].includes(e.code)) e.preventDefault();
+});
+window.addEventListener("keyup", e => {
+  keys[e.code] = false;
+});
+restartBtn.addEventListener("click", () => {
+  score = 0;
+  timeLeft = 60;
+  stage = 1;
+  running = true;
+  gameOver = false;
+  lastTime = 0;
+  scoreLabel.textContent = score;
+  timeLabel.textContent = timeLeft;
+  createStage(stage);
+  drawScene();
+  requestAnimationFrame(gameLoop);
+});
+
+createStage(stage);
+drawScene();
+requestAnimationFrame(gameLoop);
+setInterval(tickTimer, 1000);
+</script>
+</body>
+</html>
